@@ -390,7 +390,20 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       ),
                       child: ListTile(
                         onTap: () => print('${value[index]}'),
-                        title: Text(value[index].title),
+                        title: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              value[index].title,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                            Text('Priority: ${value[index].priority}'),
+                            Text(value[index].description),
+                          ],
+                        ),
                       ),
                     );
                   },

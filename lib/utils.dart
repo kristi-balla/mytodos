@@ -32,6 +32,9 @@ enum Priority {
   const Priority(this.label, this.color);
   final String label;
   final Color color;
+
+  @override
+  String toString() => label;
 }
 
 /// Example events.
