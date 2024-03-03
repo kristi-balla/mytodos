@@ -9,7 +9,7 @@ void main() {
 }
 
 class TodoApp extends StatelessWidget {
-  const TodoApp({super.key});
+  const TodoApp({Key? key});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +27,7 @@ class TodoApp extends StatelessWidget {
 }
 
 class TodoScreen extends StatefulWidget {
-  const TodoScreen({super.key});
+  const TodoScreen({Key? key});
 
   @override
   _TodoScreenState createState() => _TodoScreenState();
@@ -68,28 +68,14 @@ class _TodoScreenState extends State<TodoScreen> {
   }
 }
 
-class CalendarScreen extends StatelessWidget {
-  const CalendarScreen({super.key});
+class CalendarScreen extends StatefulWidget {
+  const CalendarScreen({Key? key});
 
   @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Padding(
-        padding: EdgeInsets.all(8.0),
-        child: CalendarWidget(),
-      ),
-    );
-  }
+  _CalendarScreenState createState() => _CalendarScreenState();
 }
 
-class CalendarWidget extends StatefulWidget {
-  const CalendarWidget({super.key});
-
-  @override
-  _CalendarWidgetState createState() => _CalendarWidgetState();
-}
-
-class _CalendarWidgetState extends State<CalendarWidget> {
+class _CalendarScreenState extends State<CalendarScreen> {
   late final ValueNotifier<List<Event>> _selectedEvents;
   final ValueNotifier<DateTime> _focusedDay = ValueNotifier(DateTime.now());
   final Set<DateTime> _selectedDays = LinkedHashSet<DateTime>(
@@ -174,9 +160,6 @@ class _CalendarWidgetState extends State<CalendarWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('My Calendar'),
-      ),
       body: Column(
         children: [
           ValueListenableBuilder<DateTime>(
@@ -215,7 +198,9 @@ class _CalendarWidgetState extends State<CalendarWidget> {
             firstDay: kFirstDay,
             lastDay: kLastDay,
             focusedDay: _focusedDay.value,
-            headerVisible: false,
+            startingDayOfWeek: StartingDayOfWeek.monday,
+            availableGestures: AvailableGestures.all,
+            headerVisible: true,
             selectedDayPredicate: (day) => _selectedDays.contains(day),
             rangeStartDay: _rangeStart,
             rangeEndDay: _rangeEnd,
@@ -236,7 +221,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
               }
             },
           ),
-          const SizedBox(height: 8.0),
+          SizedBox(height: 8.0),
           Expanded(
             child: ValueListenableBuilder<List<Event>>(
               valueListenable: _selectedEvents,
@@ -278,14 +263,13 @@ class _CalendarHeader extends StatelessWidget {
   final bool clearButtonVisible;
 
   const _CalendarHeader({
-    Key? key,
     required this.focusedDay,
     required this.onLeftArrowTap,
     required this.onRightArrowTap,
     required this.onTodayButtonTap,
     required this.onClearButtonTap,
     required this.clearButtonVisible,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -330,7 +314,7 @@ class _CalendarHeader extends StatelessWidget {
 }
 
 class TodoListScreen extends StatelessWidget {
-  const TodoListScreen({super.key});
+  const TodoListScreen({Key? key});
 
   @override
   Widget build(BuildContext context) {
