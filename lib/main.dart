@@ -46,6 +46,7 @@ class _TodoScreenState extends State<TodoScreen> {
       ),
       body:
           _currentIndex == 0 ? const CalendarScreen() : const TodoListScreen(),
+      floatingActionButton: _currentIndex == 0 ? const AddEventButton() : null,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
@@ -65,6 +66,155 @@ class _TodoScreenState extends State<TodoScreen> {
         ],
       ),
     );
+  }
+}
+
+class AddEventButton extends StatelessWidget {
+  const AddEventButton({Key? key});
+
+  @override
+  Widget build(BuildContext context) {
+    return FloatingActionButton(
+      onPressed: () {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) => const AddEventDialog(),
+        );
+      },
+      child: const Icon(Icons.add),
+    );
+  }
+}
+
+class AddEventDialog extends StatefulWidget {
+  const AddEventDialog({Key? key});
+
+  @override
+  _AddEventDialogState createState() => _AddEventDialogState();
+}
+
+class _AddEventDialogState extends State<AddEventDialog> {
+  final _eventNameController = TextEditingController();
+  late DateTime _selectedDate;
+  final _eventDescriptionController = TextEditingController();
+  final _eventPriorityController = TextEditingController();
+  Priority? selectedPriority;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDate = DateTime.now();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Add Event'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _eventNameController,
+            decoration: const InputDecoration(labelText: 'Title'),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('Start Date: '),
+              Text(DateFormat('yyyy-MM-dd').format(_selectedDate)),
+              IconButton(
+                icon: const Icon(Icons.calendar_today),
+                onPressed: () async {
+                  final pickedDate = await showDatePicker(
+                    context: context,
+                    initialDate: _selectedDate,
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2101),
+                  );
+
+                  if (pickedDate != null && pickedDate != _selectedDate) {
+                    setState(() {
+                      _selectedDate = pickedDate;
+                    });
+                  }
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          TextField(
+            controller: _eventDescriptionController,
+            decoration: const InputDecoration(labelText: 'Description'),
+          ),
+          const SizedBox(height: 20),
+          DropdownMenu<Priority>(
+            initialSelection: Priority.nonExistant,
+            controller: _eventPriorityController,
+            // requestFocusOnTap is enabled/disabled by platforms when it is null.
+            // On mobile platforms, this is false by default. Setting this to true will
+            // trigger focus request on the text field and virtual keyboard will appear
+            // afterward. On desktop platforms however, this defaults to true.
+            requestFocusOnTap: true,
+            label: const Text('Priority'),
+            onSelected: (Priority? prio) {
+              setState(() {
+                selectedPriority = prio;
+              });
+            },
+            dropdownMenuEntries: Priority.values
+                .map<DropdownMenuEntry<Priority>>((Priority color) {
+              return DropdownMenuEntry<Priority>(
+                value: color,
+                label: color.label,
+                enabled: color.label != 'Grey',
+                style: MenuItemButton.styleFrom(
+                  foregroundColor: color.color,
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+      actions: [
+        ElevatedButton(
+          onPressed: () {
+            final eventName = _eventNameController.text.trim();
+            final description = _eventDescriptionController.text.trim();
+            if (eventName.isNotEmpty &&
+                description.isNotEmpty &&
+                selectedPriority != null) {
+              // Add the event to the calendar
+              final newEvent = Event(
+                  title: eventName,
+                  date: _selectedDate,
+                  description: description,
+                  priority: selectedPriority);
+              kEvents.update(
+                _selectedDate,
+                (events) => events..add(newEvent),
+                ifAbsent: () => [newEvent],
+              );
+
+              Navigator.of(context).pop(); // Close the dialog
+            }
+          },
+          child: const Text('Add'),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop(); // Close the dialog
+          },
+          child: const Text('Cancel'),
+        ),
+      ],
+    );
+  }
+
+  @override
+  void dispose() {
+    _eventNameController.dispose();
+    super.dispose();
   }
 }
 
@@ -181,13 +331,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 },
                 onLeftArrowTap: () {
                   _pageController.previousPage(
-                    duration: Duration(milliseconds: 300),
+                    duration: const Duration(milliseconds: 300),
                     curve: Curves.easeOut,
                   );
                 },
                 onRightArrowTap: () {
                   _pageController.nextPage(
-                    duration: Duration(milliseconds: 300),
+                    duration: const Duration(milliseconds: 300),
                     curve: Curves.easeOut,
                   );
                 },
@@ -221,7 +371,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               }
             },
           ),
-          SizedBox(height: 8.0),
+          const SizedBox(height: 8.0),
           Expanded(
             child: ValueListenableBuilder<List<Event>>(
               valueListenable: _selectedEvents,
@@ -240,7 +390,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       ),
                       child: ListTile(
                         onTap: () => print('${value[index]}'),
-                        title: Text('${value[index]}'),
+                        title: Text(value[index].title),
                       ),
                     );
                   },
@@ -284,27 +434,27 @@ class _CalendarHeader extends StatelessWidget {
             width: 120.0,
             child: Text(
               headerText,
-              style: TextStyle(fontSize: 26.0),
+              style: const TextStyle(fontSize: 26.0),
             ),
           ),
           IconButton(
-            icon: Icon(Icons.calendar_today, size: 20.0),
+            icon: const Icon(Icons.calendar_today, size: 20.0),
             visualDensity: VisualDensity.compact,
             onPressed: onTodayButtonTap,
           ),
           if (clearButtonVisible)
             IconButton(
-              icon: Icon(Icons.clear, size: 20.0),
+              icon: const Icon(Icons.clear, size: 20.0),
               visualDensity: VisualDensity.compact,
               onPressed: onClearButtonTap,
             ),
           const Spacer(),
           IconButton(
-            icon: Icon(Icons.chevron_left),
+            icon: const Icon(Icons.chevron_left),
             onPressed: onLeftArrowTap,
           ),
           IconButton(
-            icon: Icon(Icons.chevron_right),
+            icon: const Icon(Icons.chevron_right),
             onPressed: onRightArrowTap,
           ),
         ],

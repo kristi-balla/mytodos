@@ -1,15 +1,37 @@
 import 'dart:collection';
 
+import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 /// Example event class.
 class Event {
   final String title;
+  DateTime date;
+  String description;
+  Priority? priority;
+  DateTime? reminder;
 
-  const Event(this.title);
+  Event(
+      {required this.title,
+      required this.date,
+      required this.description,
+      required this.priority,
+      this.reminder});
 
   @override
   String toString() => title;
+}
+
+enum Priority {
+  critical('critical', Colors.red),
+  important('important', Colors.orange),
+  medium('medium', Colors.green),
+  low('low', Colors.blue),
+  nonExistant('non-existant', Colors.purple);
+
+  const Priority(this.label, this.color);
+  final String label;
+  final Color color;
 }
 
 /// Example events.
@@ -18,18 +40,7 @@ class Event {
 final kEvents = LinkedHashMap<DateTime, List<Event>>(
   equals: isSameDay,
   hashCode: getHashCode,
-)..addAll(_kEventSource);
-
-final _kEventSource = {
-  for (var item in List.generate(50, (index) => index))
-    DateTime.utc(kFirstDay.year, kFirstDay.month, item * 5): List.generate(
-        item % 4 + 1, (index) => Event('Event $item | ${index + 1}'))
-}..addAll({
-    kToday: [
-      const Event('Today\'s Event 1'),
-      const Event('Today\'s Event 2'),
-    ],
-  });
+)..addAll(Map.from({}));
 
 int getHashCode(DateTime key) {
   return key.day * 1000000 + key.month * 10000 + key.year;
