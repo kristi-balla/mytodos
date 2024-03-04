@@ -41,6 +41,7 @@ enum Priority {
 }
 
 enum RecurrenceFrequency {
+  once,
   daily,
   weekly,
   monthly,
@@ -77,7 +78,11 @@ List<Event> generateRecurringEvents(Event event) {
   DateTime currentDate = event.date;
   recurringEvents.add(event);
 
-  while (currentDate.compareTo(event.endDate) <= 0) {
+  if (event.frequency == RecurrenceFrequency.once) {
+    return recurringEvents;
+  }
+
+  while (!currentDate.isAfter(event.endDate)) {
     switch (event.frequency) {
       case RecurrenceFrequency.daily:
         currentDate = currentDate.add(const Duration(days: 1));
@@ -97,16 +102,14 @@ List<Event> generateRecurringEvents(Event event) {
         break;
     }
 
-    if (currentDate.compareTo(event.endDate) <= 0) {
-      recurringEvents.add(Event(
-        title: event.title,
-        date: currentDate,
-        description: event.description,
-        priority: event.priority,
-        endDate: event.endDate,
-        frequency: event.frequency,
-      ));
-    }
+    recurringEvents.add(Event(
+      title: event.title,
+      date: currentDate,
+      description: event.description,
+      priority: event.priority,
+      endDate: event.endDate,
+      frequency: event.frequency,
+    ));
   }
 
   return recurringEvents;

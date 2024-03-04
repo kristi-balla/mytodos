@@ -205,7 +205,7 @@ class _AddEventDialogState extends State<AddEventDialog> {
           ),
           const SizedBox(height: 20),
           DropdownMenu<RecurrenceFrequency>(
-            initialSelection: RecurrenceFrequency.weekly,
+            initialSelection: RecurrenceFrequency.once,
             controller: _eventFrequencyController,
             // requestFocusOnTap is enabled/disabled by platforms when it is null.
             // On mobile platforms, this is false by default. Setting this to true will
@@ -237,15 +237,9 @@ class _AddEventDialogState extends State<AddEventDialog> {
             final description = _eventDescriptionController.text.trim();
             if (eventName.isNotEmpty &&
                 description.isNotEmpty &&
-                selectedPriority != null) {
+                selectedPriority != null &&
+                selectedFrequency != null) {
               // Add the event to the calendar
-              final plainEvent = Event(
-                  title: eventName,
-                  date: _selectedDate,
-                  description: description,
-                  priority: selectedPriority,
-                  endDate: _selectedEndDate);
-
               final recurringEvent = Event(
                   title: eventName,
                   date: _selectedDate,
@@ -254,24 +248,13 @@ class _AddEventDialogState extends State<AddEventDialog> {
                   endDate: _selectedEndDate,
                   frequency: selectedFrequency);
 
-              final newEvent =
-                  selectedFrequency == null ? plainEvent : recurringEvent;
-
-              if (selectedFrequency == null) {
+              List<Event> events = generateRecurringEvents(recurringEvent);
+              for (Event event in events) {
                 kEvents.update(
-                  _selectedDate,
-                  (events) => events..add(newEvent),
-                  ifAbsent: () => [newEvent],
+                  event.date,
+                  (events) => events..add(event),
+                  ifAbsent: () => [event],
                 );
-              } else {
-                List<Event> events = generateRecurringEvents(newEvent);
-                for (Event event in events) {
-                  kEvents.update(
-                    event.date,
-                    (events) => events..add(event),
-                    ifAbsent: () => [event],
-                  );
-                }
               }
 
               Navigator.of(context).pop(); // Close the dialog
