@@ -470,6 +470,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 return ListView.builder(
                   itemCount: value.length,
                   itemBuilder: (context, index) {
+                    final event = value[index];
                     return Container(
                       margin: const EdgeInsets.symmetric(
                         horizontal: 12.0,
@@ -484,14 +485,39 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              value[index].title,
+                              event.title,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 18,
                               ),
                             ),
-                            Text('Priority: ${value[index].priority}'),
-                            Text(value[index].description),
+                            Text('Priority: ${event.priority}'),
+                            Text(event.description),
+                          ],
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () {
+                                // Implement remove functionality here
+                                setState(() {
+                                  // Remove the event from the list of events being displayed
+                                  value.removeAt(index);
+                                  // Update the list of events in the database or wherever they are stored
+                                  final eventDate = event.date;
+                                  if (kEvents.containsKey(eventDate)) {
+                                    // Remove the event from the list associated with the event date
+                                    kEvents[eventDate]!.remove(event);
+                                    // If the list of events for that date is empty, remove the date entry
+                                    if (kEvents[eventDate]!.isEmpty) {
+                                      kEvents.remove(eventDate);
+                                    }
+                                  }
+                                });
+                              },
+                            ),
                           ],
                         ),
                       ),
