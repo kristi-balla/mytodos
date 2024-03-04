@@ -330,6 +330,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       _selectedDays.isNotEmpty || _rangeStart != null || _rangeEnd != null;
 
   List<Event> _getEventsForDay(DateTime day) {
+    kEvents[day]?.sort((ev1, ev2) => ev1.date.compareTo(ev2.date));
     return kEvents[day] ?? [];
   }
 
