@@ -100,6 +100,8 @@ class _AddEventDialogState extends State<AddEventDialog> {
   final _eventPriorityController = TextEditingController();
   Priority? selectedPriority;
   late DateTime _selectedEndDate;
+  final _eventFrequencyController = TextEditingController();
+  RecurrenceFrequency? selectedFrequency;
 
   @override
   void initState() {
@@ -202,6 +204,30 @@ class _AddEventDialogState extends State<AddEventDialog> {
             ],
           ),
           const SizedBox(height: 20),
+          DropdownMenu<RecurrenceFrequency>(
+            initialSelection: RecurrenceFrequency.weekly,
+            controller: _eventFrequencyController,
+            // requestFocusOnTap is enabled/disabled by platforms when it is null.
+            // On mobile platforms, this is false by default. Setting this to true will
+            // trigger focus request on the text field and virtual keyboard will appear
+            // afterward. On desktop platforms however, this defaults to true.
+            requestFocusOnTap: true,
+            label: const Text('Recurrence Frequency:'),
+            onSelected: (RecurrenceFrequency? frequency) {
+              setState(() {
+                selectedFrequency = frequency;
+              });
+            },
+            dropdownMenuEntries: RecurrenceFrequency.values
+                .map<DropdownMenuEntry<RecurrenceFrequency>>(
+                    (RecurrenceFrequency freq) {
+              return DropdownMenuEntry<RecurrenceFrequency>(
+                value: freq,
+                label: freq.name,
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 20),
         ],
       ),
       actions: [
@@ -213,17 +239,40 @@ class _AddEventDialogState extends State<AddEventDialog> {
                 description.isNotEmpty &&
                 selectedPriority != null) {
               // Add the event to the calendar
-              final newEvent = Event(
+              final plainEvent = Event(
                   title: eventName,
                   date: _selectedDate,
                   description: description,
                   priority: selectedPriority,
                   endDate: _selectedEndDate);
-              kEvents.update(
-                _selectedDate,
-                (events) => events..add(newEvent),
-                ifAbsent: () => [newEvent],
-              );
+
+              final recurringEvent = Event(
+                  title: eventName,
+                  date: _selectedDate,
+                  description: description,
+                  priority: selectedPriority,
+                  endDate: _selectedEndDate,
+                  frequency: selectedFrequency);
+
+              final newEvent =
+                  selectedFrequency == null ? plainEvent : recurringEvent;
+
+              if (selectedFrequency == null) {
+                kEvents.update(
+                  _selectedDate,
+                  (events) => events..add(newEvent),
+                  ifAbsent: () => [newEvent],
+                );
+              } else {
+                List<Event> events = generateRecurringEvents(newEvent);
+                for (Event event in events) {
+                  kEvents.update(
+                    event.date,
+                    (events) => events..add(event),
+                    ifAbsent: () => [event],
+                  );
+                }
+              }
 
               Navigator.of(context).pop(); // Close the dialog
             }

@@ -75,8 +75,9 @@ final kLastDay = DateTime(kToday.year, kToday.month + 3, kToday.day);
 List<Event> generateRecurringEvents(Event event) {
   List<Event> recurringEvents = [];
   DateTime currentDate = event.date;
+  recurringEvents.add(event);
 
-  while (currentDate.isBefore(event.endDate)) {
+  while (currentDate.compareTo(event.endDate) <= 0) {
     switch (event.frequency) {
       case RecurrenceFrequency.daily:
         currentDate = currentDate.add(const Duration(days: 1));
@@ -96,7 +97,7 @@ List<Event> generateRecurringEvents(Event event) {
         break;
     }
 
-    if (currentDate.isBefore(event.endDate)) {
+    if (currentDate.compareTo(event.endDate) <= 0) {
       recurringEvents.add(Event(
         title: event.title,
         date: currentDate,
