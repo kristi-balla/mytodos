@@ -110,6 +110,33 @@ class _AddEventDialogState extends State<AddEventDialog> {
     _selectedEndDate = DateTime.now();
   }
 
+  Future<DateTime> _pickDateTime(
+      BuildContext context, DateTime initDate) async {
+    final pickedDate = await showDatePicker(
+      context: context,
+      initialDate: initDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (pickedDate != null) {
+      final pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(initDate),
+      );
+      if (pickedTime != null) {
+        return DateTime(
+          pickedDate.year,
+          pickedDate.month,
+          pickedDate.day,
+          pickedTime.hour,
+          pickedTime.minute,
+        );
+      }
+    }
+
+    return initDate;
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -126,22 +153,14 @@ class _AddEventDialogState extends State<AddEventDialog> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Text('Start Date: '),
-              Text(DateFormat('yyyy-MM-dd').format(_selectedDate)),
+              Text(DateFormat('yyyy-MM-dd HH:mm').format(_selectedDate)),
               IconButton(
                 icon: const Icon(Icons.calendar_today),
                 onPressed: () async {
-                  final pickedDate = await showDatePicker(
-                    context: context,
-                    initialDate: _selectedDate,
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime(2101),
-                  );
-
-                  if (pickedDate != null && pickedDate != _selectedDate) {
-                    setState(() {
-                      _selectedDate = pickedDate;
-                    });
-                  }
+                  final date = await _pickDateTime(context, _selectedDate);
+                  setState(() {
+                    _selectedDate = date;
+                  });
                 },
               ),
             ],
@@ -183,29 +202,21 @@ class _AddEventDialogState extends State<AddEventDialog> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Text('End Date: '),
-              Text(DateFormat('yyyy-MM-dd').format(_selectedEndDate)),
+              Text(DateFormat('yyyy-MM-dd HH:mm').format(_selectedEndDate)),
               IconButton(
                 icon: const Icon(Icons.calendar_today),
                 onPressed: () async {
-                  final pickedDate = await showDatePicker(
-                    context: context,
-                    initialDate: _selectedEndDate,
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime(2101),
-                  );
-
-                  if (pickedDate != null && pickedDate != _selectedEndDate) {
-                    setState(() {
-                      _selectedEndDate = pickedDate;
-                    });
-                  }
+                  final date = await _pickDateTime(context, _selectedEndDate);
+                  setState(() {
+                    _selectedEndDate = date;
+                  });
                 },
               ),
             ],
           ),
           const SizedBox(height: 20),
           DropdownMenu<RecurrenceFrequency>(
-            initialSelection: RecurrenceFrequency.once,
+            initialSelection: RecurrenceFrequency.never,
             controller: _eventFrequencyController,
             // requestFocusOnTap is enabled/disabled by platforms when it is null.
             // On mobile platforms, this is false by default. Setting this to true will
@@ -468,7 +479,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         borderRadius: BorderRadius.circular(12.0),
                       ),
                       child: ListTile(
-                        onTap: () => print('${value[index]}'),
                         title: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [

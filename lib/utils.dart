@@ -30,7 +30,9 @@ enum Priority {
   important('important', Colors.orange),
   medium('medium', Colors.green),
   low('low', Colors.blue),
-  nonExistant('non-existant', Colors.purple);
+  iToldYouIWouldWriteThisDown(
+      'I told you i would write this down', Colors.purple),
+  nonExistant('non-existant', Colors.black);
 
   const Priority(this.label, this.color);
   final String label;
@@ -40,13 +42,7 @@ enum Priority {
   String toString() => label;
 }
 
-enum RecurrenceFrequency {
-  once,
-  daily,
-  weekly,
-  monthly,
-  yearly,
-}
+enum RecurrenceFrequency { once, daily, weekly, monthly, yearly, never }
 
 /// Example events.
 ///
@@ -76,14 +72,20 @@ final kLastDay = DateTime(kToday.year, kToday.month + 3, kToday.day);
 List<Event> generateRecurringEvents(Event event) {
   List<Event> recurringEvents = [];
   DateTime currentDate = event.date;
-  recurringEvents.add(event);
 
-  if (event.frequency == RecurrenceFrequency.once) {
-    return recurringEvents;
-  }
+  while (currentDate.compareTo(event.endDate) <= 0) {
+    recurringEvents.add(Event(
+      title: event.title,
+      date: currentDate,
+      description: event.description,
+      priority: event.priority,
+      endDate: event.endDate,
+      frequency: event.frequency,
+    ));
 
-  while (!currentDate.isAfter(event.endDate)) {
     switch (event.frequency) {
+      case RecurrenceFrequency.once:
+        return recurringEvents;
       case RecurrenceFrequency.daily:
         currentDate = currentDate.add(const Duration(days: 1));
         break;
@@ -101,15 +103,6 @@ List<Event> generateRecurringEvents(Event event) {
       default:
         break;
     }
-
-    recurringEvents.add(Event(
-      title: event.title,
-      date: currentDate,
-      description: event.description,
-      priority: event.priority,
-      endDate: event.endDate,
-      frequency: event.frequency,
-    ));
   }
 
   return recurringEvents;
