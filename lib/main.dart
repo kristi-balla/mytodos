@@ -99,11 +99,13 @@ class _AddEventDialogState extends State<AddEventDialog> {
   final _eventDescriptionController = TextEditingController();
   final _eventPriorityController = TextEditingController();
   Priority? selectedPriority;
+  late DateTime _selectedEndDate;
 
   @override
   void initState() {
     super.initState();
     _selectedDate = DateTime.now();
+    _selectedEndDate = DateTime.now();
   }
 
   @override
@@ -174,6 +176,32 @@ class _AddEventDialogState extends State<AddEventDialog> {
               );
             }).toList(),
           ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('End Date: '),
+              Text(DateFormat('yyyy-MM-dd').format(_selectedEndDate)),
+              IconButton(
+                icon: const Icon(Icons.calendar_today),
+                onPressed: () async {
+                  final pickedDate = await showDatePicker(
+                    context: context,
+                    initialDate: _selectedEndDate,
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2101),
+                  );
+
+                  if (pickedDate != null && pickedDate != _selectedEndDate) {
+                    setState(() {
+                      _selectedEndDate = pickedDate;
+                    });
+                  }
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
         ],
       ),
       actions: [
@@ -189,7 +217,8 @@ class _AddEventDialogState extends State<AddEventDialog> {
                   title: eventName,
                   date: _selectedDate,
                   description: description,
-                  priority: selectedPriority);
+                  priority: selectedPriority,
+                  endDate: _selectedEndDate);
               kEvents.update(
                 _selectedDate,
                 (events) => events..add(newEvent),
@@ -350,6 +379,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             focusedDay: _focusedDay.value,
             startingDayOfWeek: StartingDayOfWeek.monday,
             availableGestures: AvailableGestures.all,
+            weekendDays: const [DateTime.saturday, DateTime.sunday],
             headerVisible: true,
             selectedDayPredicate: (day) => _selectedDays.contains(day),
             rangeStartDay: _rangeStart,
@@ -357,10 +387,27 @@ class _CalendarScreenState extends State<CalendarScreen> {
             calendarFormat: _calendarFormat,
             rangeSelectionMode: _rangeSelectionMode,
             eventLoader: _getEventsForDay,
-            holidayPredicate: (day) {
-              // Every 20th day of the month will be treated as a holiday
-              return day.day == 20;
-            },
+            calendarBuilders: CalendarBuilders(
+              // make the calendar entries squares
+              defaultBuilder: (context, day, focusedDay) {
+                return Container(
+                  margin: const EdgeInsets.all(4.0),
+                  width: 40, // Adjust the width to make it square
+                  height: 40, // Adjust the height to make it square
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.rectangle, // Set the shape to square
+                    borderRadius: BorderRadius.circular(8.0),
+                    color: Colors.blue, // Adjust color as needed
+                  ),
+                  child: Text(
+                    '${day.day}',
+                    style: const TextStyle(
+                        color: Colors.black), // Adjust text color
+                  ),
+                );
+              },
+            ),
             onDaySelected: _onDaySelected,
             onRangeSelected: _onRangeSelected,
             onCalendarCreated: (controller) => _pageController = controller,

@@ -9,14 +9,17 @@ class Event {
   DateTime date;
   String description;
   Priority? priority;
-  DateTime? reminder;
+  DateTime endDate;
+  RecurrenceFrequency? frequency;
 
-  Event(
-      {required this.title,
-      required this.date,
-      required this.description,
-      required this.priority,
-      this.reminder});
+  Event({
+    required this.title,
+    required this.date,
+    required this.description,
+    required this.priority,
+    required this.endDate,
+    this.frequency,
+  });
 
   @override
   String toString() => title;
@@ -35,6 +38,13 @@ enum Priority {
 
   @override
   String toString() => label;
+}
+
+enum RecurrenceFrequency {
+  daily,
+  weekly,
+  monthly,
+  yearly,
 }
 
 /// Example events.
@@ -61,3 +71,42 @@ List<DateTime> daysInRange(DateTime first, DateTime last) {
 final kToday = DateTime.now();
 final kFirstDay = DateTime(kToday.year, kToday.month - 3, kToday.day);
 final kLastDay = DateTime(kToday.year, kToday.month + 3, kToday.day);
+
+List<Event> generateRecurringEvents(Event event) {
+  List<Event> recurringEvents = [];
+  DateTime currentDate = event.date;
+
+  while (currentDate.isBefore(event.endDate)) {
+    switch (event.frequency) {
+      case RecurrenceFrequency.daily:
+        currentDate = currentDate.add(const Duration(days: 1));
+        break;
+      case RecurrenceFrequency.weekly:
+        currentDate = currentDate.add(const Duration(days: 7));
+        break;
+      case RecurrenceFrequency.monthly:
+        currentDate =
+            DateTime(currentDate.year, currentDate.month + 1, currentDate.day);
+        break;
+      case RecurrenceFrequency.yearly:
+        currentDate =
+            DateTime(currentDate.year + 1, currentDate.month, currentDate.day);
+        break;
+      default:
+        break;
+    }
+
+    if (currentDate.isBefore(event.endDate)) {
+      recurringEvents.add(Event(
+        title: event.title,
+        date: currentDate,
+        description: event.description,
+        priority: event.priority,
+        endDate: event.endDate,
+        frequency: event.frequency,
+      ));
+    }
+  }
+
+  return recurringEvents;
+}
