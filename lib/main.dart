@@ -9,7 +9,7 @@ void main() {
 }
 
 class TodoApp extends StatelessWidget {
-  const TodoApp({Key? key});
+  const TodoApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +27,7 @@ class TodoApp extends StatelessWidget {
 }
 
 class TodoScreen extends StatefulWidget {
-  const TodoScreen({Key? key});
+  const TodoScreen({super.key});
 
   @override
   _TodoScreenState createState() => _TodoScreenState();
@@ -70,7 +70,7 @@ class _TodoScreenState extends State<TodoScreen> {
 }
 
 class AddEventButton extends StatelessWidget {
-  const AddEventButton({Key? key});
+  const AddEventButton({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +87,7 @@ class AddEventButton extends StatelessWidget {
 }
 
 class AddEventDialog extends StatefulWidget {
-  const AddEventDialog({Key? key});
+  const AddEventDialog({super.key});
 
   @override
   _AddEventDialogState createState() => _AddEventDialogState();
@@ -291,7 +291,7 @@ class _AddEventDialogState extends State<AddEventDialog> {
 }
 
 class CalendarScreen extends StatefulWidget {
-  const CalendarScreen({Key? key});
+  const CalendarScreen({super.key});
 
   @override
   _CalendarScreenState createState() => _CalendarScreenState();
@@ -593,7 +593,7 @@ class _CalendarHeader extends StatelessWidget {
 }
 
 class TodoListScreen extends StatelessWidget {
-  const TodoListScreen({Key? key});
+  const TodoListScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
